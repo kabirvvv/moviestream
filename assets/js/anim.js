@@ -1,10 +1,10 @@
 // ============================================================
-//  STREAMVAULT — Animations & Mobile Enhancements
+//  STREAMVAULT — Animations & Interactions
 // ============================================================
 
 const Anim = {
 
-  // ── Scroll reveal (IntersectionObserver) ──────────────────
+  // ── Scroll reveal ──────────────────────────────────────────
   initReveal() {
     const obs = new IntersectionObserver(entries => {
       entries.forEach(el => {
@@ -13,11 +13,10 @@ const Anim = {
           obs.unobserve(el.target);
         }
       });
-    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+    }, { threshold: 0.08, rootMargin: "0px 0px -36px 0px" });
 
     document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
 
-    // Auto-add reveal to content rows
     document.querySelectorAll(".content-row").forEach((row, i) => {
       if (!row.classList.contains("reveal")) {
         row.classList.add("reveal");
@@ -42,15 +41,14 @@ const Anim = {
     });
   },
 
-  // ── Drag-to-scroll on card tracks ─────────────────────────
+  // ── Drag-scroll on card tracks ────────────────────────────
   initDragScroll() {
     document.querySelectorAll(".cards-track").forEach(track => {
       let isDown = false, startX = 0, scrollLeft = 0;
-
       track.addEventListener("mousedown", e => {
         isDown = true;
         track.classList.add("dragging");
-        startX    = e.pageX - track.offsetLeft;
+        startX     = e.pageX - track.offsetLeft;
         scrollLeft = track.scrollLeft;
       });
       const end = () => { isDown = false; track.classList.remove("dragging"); };
@@ -66,7 +64,7 @@ const Anim = {
     });
   },
 
-  // ── Hero background parallax on scroll ────────────────────
+  // ── Hero parallax ─────────────────────────────────────────
   initHeroParallax() {
     const bg = document.getElementById("heroBg");
     if (!bg) return;
@@ -76,7 +74,7 @@ const Anim = {
       requestAnimationFrame(() => {
         const y = window.scrollY;
         if (y < window.innerHeight) {
-          bg.style.transform = `translateY(${y * 0.35}px)`;
+          bg.style.transform = `translateY(${y * 0.3}px)`;
         }
         ticking = false;
       });
@@ -84,8 +82,7 @@ const Anim = {
     }, { passive: true });
   },
 
-  // ── Hero auto-rotation with progress bar ──────────────────
-  heroTimer: null,
+  // ── Hero progress bar ─────────────────────────────────────
   heroDuration: 7000,
   heroStart: 0,
   heroRafId: null,
@@ -103,48 +100,44 @@ const Anim = {
     this.heroRafId = requestAnimationFrame(tick);
   },
 
-  // ── Card stagger on first load ─────────────────────────────
+  // ── Card stagger ──────────────────────────────────────────
   staggerCards(container) {
     const cards = container.querySelectorAll(".card");
     cards.forEach((card, i) => {
       card.style.opacity = "0";
-      card.style.transform = "translateY(20px)";
+      card.style.transform = "translateY(18px)";
       setTimeout(() => {
-        card.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+        card.style.transition = "opacity 0.38s ease, transform 0.38s ease";
         card.style.opacity = "1";
         card.style.transform = "";
-      }, i * 45);
+      }, i * 40);
     });
   },
 
-  // ── Navbar active on scroll + hide/show ───────────────────
+  // ── Navbar scroll behavior ────────────────────────────────
   initNavScroll() {
     const nav = document.querySelector(".navbar");
     if (!nav) return;
-    let lastY = 0;
     window.addEventListener("scroll", () => {
-      const y = window.scrollY;
-      nav.classList.toggle("scrolled", y > 50);
-      lastY = y;
+      nav.classList.toggle("scrolled", window.scrollY > 50);
     }, { passive: true });
   },
 
-  // ── Image lazy load with fade-in ──────────────────────────
+  // ── Image lazy load fade ──────────────────────────────────
   initLazyImages() {
-    const imgs = document.querySelectorAll("img[loading='lazy']");
-    imgs.forEach(img => {
+    document.querySelectorAll("img[loading='lazy']").forEach(img => {
       img.style.opacity = "0";
-      img.style.transition = "opacity 0.4s ease";
+      img.style.transition = "opacity 0.38s ease";
       if (img.complete) {
         img.style.opacity = "1";
       } else {
-        img.addEventListener("load", () => { img.style.opacity = "1"; });
+        img.addEventListener("load",  () => { img.style.opacity = "1"; });
         img.addEventListener("error", () => { img.style.opacity = "1"; });
       }
     });
   },
 
-  // ── Touch swipe for hero ───────────────────────────────────
+  // ── Hero touch swipe ──────────────────────────────────────
   initHeroSwipe() {
     const hero = document.getElementById("hero");
     if (!hero) return;
@@ -163,7 +156,7 @@ const Anim = {
     }, { passive: true });
   },
 
-  // ── Bottom nav active state ────────────────────────────────
+  // ── Bottom nav active state ───────────────────────────────
   updateBottomNav() {
     const path = location.pathname.split("/").pop() || "index.html";
     document.querySelectorAll(".bottom-nav-item").forEach(item => {
@@ -186,6 +179,3 @@ const Anim = {
 };
 
 document.addEventListener("DOMContentLoaded", () => Anim.init());
-
-// Re-run lazy + reveal + drag after dynamic content loads
-const _origInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
