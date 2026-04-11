@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search — StreamVault</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+  <div class="search-hero">
+    <h1>Find Something to Watch</h1>
+    <p>Search millions of movies and TV shows</p>
+    <form class="search-box" id="searchForm">
+      <input
+        class="search-input"
+        id="searchInput"
+        type="text"
+        placeholder="Search movies, TV shows…"
+        autocomplete="off"
+        autofocus
+      >
+      <button class="search-btn" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Search
+      </button>
+    </form>
+  </div>
+
+  <div class="search-results-wrap">
+    <p class="search-label" id="searchLabel"></p>
+    <div class="cards-grid" id="searchGrid"></div>
+    <div style="text-align:center;margin-top:2rem">
+      <button class="btn btn-secondary" id="loadMoreBtn" style="display:none">
+        Load More
+      </button>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/search.js"></script>
+</body>
+</html>

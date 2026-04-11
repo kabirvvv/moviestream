@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movies — StreamVault</title>
+  <meta name="description" content="Browse thousands of movies on StreamVault.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+  <div class="page-header">
+    <h1 class="page-title" id="pageTypeTitle">Movies</h1>
+
+    <!-- Sort -->
+    <div class="filter-bar" style="margin-bottom:1rem">
+      <select class="filter-select" onchange="Browse.setSort(this.value)">
+        <option value="popularity.desc">Most Popular</option>
+        <option value="vote_average.desc">Top Rated</option>
+        <option value="primary_release_date.desc">Now Playing</option>
+      </select>
+    </div>
+
+    <!-- Genre chips -->
+    <div class="filter-bar" id="genreBar">
+      <div class="filter-chip active">Loading genres…</div>
+    </div>
+  </div>
+
+  <div style="max-width:1600px;margin:0 auto;padding:0 2rem 4rem">
+    <div class="cards-grid" id="contentGrid"></div>
+    <div id="scroll-sentinel" style="height:1px"></div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/browse.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", () => Browse.init("movie"));</script>
+</body>
+</html>
