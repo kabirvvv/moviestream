@@ -4,7 +4,7 @@
 // ============================================================
 
 const CONFIG = {
-  TMDB_API_KEY: "YOUR_TMDB_API_KEY_HERE", // ← Replace this
+  TMDB_API_KEY: "1d4d6295554560f22f739c052afafb83", // ← Replace this
   TMDB_BASE_URL: "https://api.themoviedb.org/3",
   TMDB_IMG_BASE: "https://image.tmdb.org/t/p",
   PLAYER_BASE: "https://player.videasy.net",
