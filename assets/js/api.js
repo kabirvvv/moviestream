@@ -18,16 +18,9 @@ const API = {
   },
 
   playerURL(type, id, season, episode) {
+    // vidsrc.to format: /embed/movie/{id} or /embed/tv/{id}/{season}/{episode}
     let src = `${CONFIG.PLAYER_BASE}/${type}/${id}`;
     if (type === "tv" && season && episode) src += `/${season}/${episode}`;
-    src += `?color=${CONFIG.PLAYER_COLOR}&nextEpisode=true&episodeSelector=true&autoplayNextEpisode=true&overlay=true`;
-    // Restore progress from localStorage
-    const key = `progress_${type}_${id}${season ? `_s${season}e${episode}` : ""}`;
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      const { timestamp } = JSON.parse(saved);
-      if (timestamp > 30) src += `&progress=${Math.floor(timestamp)}`;
-    }
     return src;
   },
 
