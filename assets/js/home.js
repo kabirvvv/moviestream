@@ -28,18 +28,17 @@ function renderHero(idx) {
     ? `watch.html?type=movie&id=${item.id}`
     : `watch.html?type=tv&id=${item.id}&season=1&episode=1`;
 
-  // Backdrop crossfade
   const bg = document.getElementById("heroBg");
-  bg.style.transition = "opacity 0.6s ease";
+  bg.style.transition = "opacity 0.7s ease";
   bg.style.opacity = "0";
   setTimeout(() => {
     bg.style.backgroundImage = `url(${API.img(item.backdrop_path, "original")})`;
     bg.style.opacity = "1";
     bg.classList.add("animating");
-  }, 300);
+  }, 350);
 
   document.getElementById("heroBadge").innerHTML =
-    `<span class="hero-badge-dot"></span>${type === "movie" ? "TRENDING MOVIE" : "TRENDING SERIES"}`;
+    `<span class="hero-badge-dot"></span>${type === "movie" ? "Trending Film" : "Trending Series"}`;
   document.getElementById("heroTitle").textContent = title;
   document.getElementById("heroYear").textContent = UI.year(date);
   document.getElementById("heroRating").innerHTML = UI.ratingBadge(item.vote_average);
@@ -47,12 +46,10 @@ function renderHero(idx) {
   document.getElementById("heroWatchBtn").href  = watchURL;
   document.getElementById("heroDetailBtn").href = detailURL;
 
-  // Thumb active state
   document.querySelectorAll(".hero-thumb").forEach((el, i) => {
     el.classList.toggle("active", i === idx);
   });
 
-  // Progress bar
   if (typeof Anim !== "undefined") Anim.startHeroProgress();
 }
 
@@ -94,13 +91,12 @@ async function loadHomeRows() {
 
   wrap.innerHTML = [
     UI.row("Trending This Week",      trending.results,   "movie", "movies.html"),
-    UI.row("Now Playing in Theaters", nowPlaying.results, "movie", "movies.html"),
-    UI.row("Top Rated Movies",        topMovies.results,  "movie", "movies.html"),
+    UI.row("Now Playing",             nowPlaying.results, "movie", "movies.html"),
+    UI.row("Top Rated Films",         topMovies.results,  "movie", "movies.html"),
     UI.row("Popular TV Shows",        popularTV.results,  "tv",    "shows.html"),
     UI.row("Top Rated Series",        topTV.results,      "tv",    "shows.html"),
   ].join("");
 
-  // Re-init drag scroll and lazy images after content loads
   if (typeof Anim !== "undefined") {
     Anim.initDragScroll();
     Anim.initLazyImages();
