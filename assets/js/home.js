@@ -5,6 +5,7 @@
 let heroItems = [];
 let heroIndex = 0;
 let heroTimer;
+const HERO_DURATION = 7000;
 
 async function initHero() {
   const data = await API.getTrending("all", "day");
@@ -23,25 +24,36 @@ function renderHero(idx) {
   const title = item.title || item.name;
   const date = item.release_date || item.first_air_date;
   const detailURL = type === "movie" ? `movie.html?id=${item.id}` : `tv.html?id=${item.id}`;
-  const watchURL = type === "movie"
+  const watchURL  = type === "movie"
     ? `watch.html?type=movie&id=${item.id}`
     : `watch.html?type=tv&id=${item.id}&season=1&episode=1`;
 
-  const hero = document.getElementById("hero");
+  // Backdrop crossfade
   const bg = document.getElementById("heroBg");
-  bg.style.backgroundImage = `url(${API.img(item.backdrop_path, "original")})`;
+  bg.style.transition = "opacity 0.6s ease";
+  bg.style.opacity = "0";
+  setTimeout(() => {
+    bg.style.backgroundImage = `url(${API.img(item.backdrop_path, "original")})`;
+    bg.style.opacity = "1";
+    bg.classList.add("animating");
+  }, 300);
 
-  document.getElementById("heroBadge").textContent = type === "movie" ? "🎬 TRENDING MOVIE" : "📺 TRENDING SERIES";
+  document.getElementById("heroBadge").innerHTML =
+    `<span class="hero-badge-dot"></span>${type === "movie" ? "TRENDING MOVIE" : "TRENDING SERIES"}`;
   document.getElementById("heroTitle").textContent = title;
   document.getElementById("heroYear").textContent = UI.year(date);
   document.getElementById("heroRating").innerHTML = UI.ratingBadge(item.vote_average);
   document.getElementById("heroOverview").textContent = item.overview || "";
-  document.getElementById("heroWatchBtn").href = watchURL;
+  document.getElementById("heroWatchBtn").href  = watchURL;
   document.getElementById("heroDetailBtn").href = detailURL;
 
+  // Thumb active state
   document.querySelectorAll(".hero-thumb").forEach((el, i) => {
     el.classList.toggle("active", i === idx);
   });
+
+  // Progress bar
+  if (typeof Anim !== "undefined") Anim.startHeroProgress();
 }
 
 function renderHeroThumbs() {
@@ -56,11 +68,12 @@ function startHeroRotation() {
   heroTimer = setInterval(() => {
     const next = (heroIndex + 1) % heroItems.length;
     renderHero(next);
-  }, 7000);
+  }, HERO_DURATION);
 }
 
 function resetTimer() {
   clearInterval(heroTimer);
+  if (typeof Anim !== "undefined") cancelAnimationFrame(Anim.heroRafId);
   startHeroRotation();
 }
 
@@ -80,12 +93,19 @@ async function loadHomeRows() {
   const wrap = document.getElementById("rowsWrap");
 
   wrap.innerHTML = [
-    UI.row("Trending This Week", trending.results, "movie", "movies.html"),
+    UI.row("Trending This Week",      trending.results,   "movie", "movies.html"),
     UI.row("Now Playing in Theaters", nowPlaying.results, "movie", "movies.html"),
-    UI.row("Top Rated Movies", topMovies.results, "movie", "movies.html"),
-    UI.row("Popular TV Shows", popularTV.results, "tv", "shows.html"),
-    UI.row("Top Rated Series", topTV.results, "tv", "shows.html"),
+    UI.row("Top Rated Movies",        topMovies.results,  "movie", "movies.html"),
+    UI.row("Popular TV Shows",        popularTV.results,  "tv",    "shows.html"),
+    UI.row("Top Rated Series",        topTV.results,      "tv",    "shows.html"),
   ].join("");
+
+  // Re-init drag scroll and lazy images after content loads
+  if (typeof Anim !== "undefined") {
+    Anim.initDragScroll();
+    Anim.initLazyImages();
+    Anim.initReveal();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
