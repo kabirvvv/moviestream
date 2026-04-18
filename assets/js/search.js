@@ -5,9 +5,26 @@
 let searchPage = 1;
 let searchTotalPages = 1;
 let currentQuery = "";
+let searchAbortController = null;
+
+// Escape user-supplied strings before injecting into innerHTML
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 async function doSearch(query, page = 1, append = false) {
   if (!query.trim()) return;
+
+  // Cancel any in-flight request to prevent race conditions
+  if (searchAbortController) searchAbortController.abort();
+  searchAbortController = new AbortController();
+  const { signal } = searchAbortController;
+
   currentQuery = query;
 
   const grid = document.getElementById("searchGrid");
@@ -20,20 +37,31 @@ async function doSearch(query, page = 1, append = false) {
     history.replaceState(null, "", `?q=${encodeURIComponent(query)}`);
   }
 
-  const data = await API.search(query, page);
-  searchPage = page;
-  searchTotalPages = data.total_pages;
+  try {
+    const data = await API.search(query, page, signal);
+    searchPage = page;
+    searchTotalPages = data.total_pages;
 
-  const items = data.results
-    .filter(i => i.media_type !== "person" && i.poster_path)
-    .map(i => UI.card(i));
+    const items = data.results
+      .filter(i => i.media_type !== "person" && i.poster_path)
+      .map(i => UI.card(i));
 
-  if (!append) grid.innerHTML = "";
-  grid.insertAdjacentHTML("beforeend", items.join("") || `<p style="color:var(--text-muted)">No results found.</p>`);
-  label.innerHTML = `Showing results for <strong>"${query}"</strong> — ${data.total_results.toLocaleString()} found`;
+    if (!append) grid.innerHTML = "";
+    grid.insertAdjacentHTML(
+      "beforeend",
+      items.join("") || `<p style="color:var(--text-muted)">No results found.</p>`
+    );
 
-  if (loadMore) {
-    loadMore.style.display = searchPage < searchTotalPages ? "flex" : "none";
+    // Safe: escapeHTML prevents XSS from a crafted ?q= URL
+    label.innerHTML = `Showing results for <strong>&ldquo;${escapeHTML(query)}&rdquo;</strong> — ${data.total_results.toLocaleString()} found`;
+
+    if (loadMore) {
+      loadMore.style.display = searchPage < searchTotalPages ? "flex" : "none";
+    }
+  } catch (err) {
+    if (err.name === "AbortError") return; // Silently drop cancelled requests
+    grid.innerHTML = `<p style="color:var(--text-muted)">Search failed. Please try again.</p>`;
+    label.textContent = "";
   }
 }
 
@@ -53,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Form submit
   form?.addEventListener("submit", e => {
     e.preventDefault();
+    if (typeof Suggest !== "undefined") Suggest.hide();
     doSearch(input.value.trim());
   });
 
