@@ -4,11 +4,32 @@
 
 const API = {
   async fetch(endpoint, params = {}, signal) {
-    const url = new URL(CONFIG.TMDB_PROXY, location.origin);
-    url.searchParams.set("endpoint", endpoint);
+    let url;
+
+    if (CONFIG.TMDB_API_KEY) {
+      // ── Direct TMDB call (local dev / non-Vercel hosting) ──
+      url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+      url.searchParams.set("api_key", CONFIG.TMDB_API_KEY);
+    } else {
+      // ── Vercel serverless proxy (production) ───────────────
+      url = new URL(CONFIG.TMDB_PROXY, location.origin);
+      url.searchParams.set("endpoint", endpoint);
+    }
+
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
     const res = await globalThis.fetch(url, { signal });
-    if (!res.ok) throw new Error(`TMDB API error: ${res.status}`);
+    if (!res.ok) {
+      // Surface a helpful message when the proxy has no key configured
+      if (!CONFIG.TMDB_API_KEY && res.status === 500) {
+        throw new Error(
+          "TMDB API key is not configured. " +
+          "Set TMDB_API_KEY in your Vercel environment variables, " +
+          "or paste it into CONFIG.TMDB_API_KEY in assets/js/config.js."
+        );
+      }
+      throw new Error(`TMDB API error: ${res.status}`);
+    }
     return res.json();
   },
 
