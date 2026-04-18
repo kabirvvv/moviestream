@@ -16,7 +16,6 @@ const Suggest = (() => {
   let activeIdx    = -1;
   let debTimer     = null;
   let controller   = null;
-  let trendCache   = null;
   let isVisible    = false;
   let lastQuery    = "";
 
@@ -49,27 +48,6 @@ const Suggest = (() => {
   }
 
   // ── Render helpers ───────────────────────────────────────────
-  function renderTrending() {
-    if (!trendCache?.length) return;
-    items = trendCache;
-    activeIdx = -1;
-    dropEl.innerHTML =
-      `<div class="sv-header">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        Trending now
-      </div>` +
-      items.map((item, i) => itemHTML(item, i)).join("") +
-      `<div class="sv-footer sv-footer--browse" id="svBrowseBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        Browse all movies &amp; shows
-      </div>`;
-    bindItemEvents();
-    document.getElementById("svBrowseBtn")?.addEventListener("click", () => {
-      hide(); location.href = "movies.html";
-    });
-    open();
-  }
-
   function renderResults(results, query) {
     items = results;
     activeIdx = -1;
@@ -186,27 +164,13 @@ const Suggest = (() => {
       input.setAttribute("aria-expanded", "false");
       input.setAttribute("aria-haspopup", "listbox");
 
-      // Preload trending in background
-      API.getTrending("all", "day")
-        .then(d => {
-          trendCache = d.results
-            .filter(i => i.media_type !== "person" && i.poster_path)
-            .slice(0, 6);
-        })
-        .catch(() => {});
-
       // ── Events ──────────────────────────────────────────────
-      input.addEventListener("focus", () => {
-        if (!input.value.trim() && trendCache?.length) renderTrending();
-      });
-
       input.addEventListener("input", () => {
         clearTimeout(debTimer);
         const q = input.value.trim();
         lastQuery = q;
         if (!q) {
-          if (trendCache?.length) renderTrending();
-          else hide();
+          hide();
           return;
         }
         debTimer = setTimeout(() => fetchQuery(q), 220);
