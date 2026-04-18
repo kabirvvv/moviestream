@@ -78,7 +78,7 @@ async function loadHomeRows() {
   const main = document.getElementById("homeContent");
   main.innerHTML = `<div class="content-section">${UI.skeletons(20)}</div>`;
 
-  const [trending, nowPlaying, topMovies, popularTV, topTV] = await Promise.all([
+  const results = await Promise.allSettled([
     API.getTrending("movie", "week"),
     API.getNowPlaying(),
     API.getTopRatedMovies(),
@@ -86,16 +86,21 @@ async function loadHomeRows() {
     API.getTopRatedTV(),
   ]);
 
+  const [trending, nowPlaying, topMovies, popularTV, topTV] =
+    results.map(r => (r.status === "fulfilled" ? r.value : null));
+
   main.innerHTML = `<div class="content-section" id="rowsWrap"></div>`;
   const wrap = document.getElementById("rowsWrap");
 
-  wrap.innerHTML = [
-    UI.row("Trending This Week",      trending.results,   "movie", "movies.html"),
-    UI.row("Now Playing",             nowPlaying.results, "movie", "movies.html"),
-    UI.row("Top Rated Films",         topMovies.results,  "movie", "movies.html"),
-    UI.row("Popular TV Shows",        popularTV.results,  "tv",    "shows.html"),
-    UI.row("Top Rated Series",        topTV.results,      "tv",    "shows.html"),
-  ].join("");
+  const rows = [
+    trending  && UI.row("Trending This Week",  trending.results,   "movie", "movies.html"),
+    nowPlaying && UI.row("Now Playing",         nowPlaying.results, "movie", "movies.html"),
+    topMovies  && UI.row("Top Rated Films",     topMovies.results,  "movie", "movies.html"),
+    popularTV  && UI.row("Popular TV Shows",    popularTV.results,  "tv",    "shows.html"),
+    topTV      && UI.row("Top Rated Series",    topTV.results,      "tv",    "shows.html"),
+  ].filter(Boolean);
+
+  wrap.innerHTML = rows.join("");
 
   if (typeof Anim !== "undefined") {
     Anim.initDragScroll();
