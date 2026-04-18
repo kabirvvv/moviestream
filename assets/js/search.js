@@ -7,7 +7,6 @@ let searchTotalPages = 1;
 let currentQuery = "";
 let searchAbortController = null;
 
-// Escape user-supplied strings before injecting into innerHTML
 function escapeHTML(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -20,15 +19,14 @@ function escapeHTML(str) {
 async function doSearch(query, page = 1, append = false) {
   if (!query.trim()) return;
 
-  // Cancel any in-flight request to prevent race conditions
   if (searchAbortController) searchAbortController.abort();
   searchAbortController = new AbortController();
   const { signal } = searchAbortController;
 
   currentQuery = query;
 
-  const grid = document.getElementById("searchGrid");
-  const label = document.getElementById("searchLabel");
+  const grid     = document.getElementById("searchGrid");
+  const label    = document.getElementById("searchLabel");
   const loadMore = document.getElementById("loadMoreBtn");
 
   if (!append) {
@@ -52,23 +50,24 @@ async function doSearch(query, page = 1, append = false) {
       items.join("") || `<p style="color:var(--text-muted)">No results found.</p>`
     );
 
-    // Safe: escapeHTML prevents XSS from a crafted ?q= URL
     label.innerHTML = `Showing results for <strong>&ldquo;${escapeHTML(query)}&rdquo;</strong> — ${data.total_results.toLocaleString()} found`;
 
     if (loadMore) {
       loadMore.style.display = searchPage < searchTotalPages ? "flex" : "none";
     }
   } catch (err) {
-    if (err.name === "AbortError") return; // Silently drop cancelled requests
+    if (err.name === "AbortError") return;
     grid.innerHTML = `<p style="color:var(--text-muted)">Search failed. Please try again.</p>`;
     label.textContent = "";
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("searchInput");
-  const form = document.getElementById("searchForm");
+  const input    = document.getElementById("searchInput");
+  const form     = document.getElementById("searchForm");
   const loadMore = document.getElementById("loadMoreBtn");
+  const grid     = document.getElementById("searchGrid");
+  const label    = document.getElementById("searchLabel");
 
   // Pre-fill from URL
   const params = new URLSearchParams(location.search);
@@ -78,28 +77,23 @@ document.addEventListener("DOMContentLoaded", () => {
     doSearch(q);
   }
 
-  // Form submit
+  // Submit (Enter / Search button) → run full search
   form?.addEventListener("submit", e => {
     e.preventDefault();
     if (typeof Suggest !== "undefined") Suggest.hide();
     doSearch(input.value.trim());
   });
 
-  // Debounced live search
-  let debounce;
+  // Clear grid immediately when input is emptied
   input?.addEventListener("input", () => {
-    clearTimeout(debounce);
-    const q = input.value.trim();
-    if (!q) {
+    if (!input.value.trim()) {
       if (searchAbortController) searchAbortController.abort();
-      document.getElementById("searchGrid").innerHTML = "";
-      document.getElementById("searchLabel").textContent = "";
+      grid.innerHTML = "";
+      label.textContent = "";
       if (loadMore) loadMore.style.display = "none";
       currentQuery = "";
       history.replaceState(null, "", location.pathname);
-      return;
     }
-    if (q.length >= 2) debounce = setTimeout(() => doSearch(q), 450);
   });
 
   // Load more
