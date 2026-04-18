@@ -49,7 +49,7 @@ const Browse = {
   async fetchPage(page) {
     if (this.currentGenre) {
       const fn = this.mediaType === "movie" ? API.getMoviesByGenre : API.getTVByGenre;
-      return fn.call(API, this.currentGenre, page);
+      return fn.call(API, this.currentGenre, page, this.currentSort);
     }
     if (this.mediaType === "movie") {
       switch (this.currentSort) {
