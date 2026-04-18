@@ -69,7 +69,7 @@ const Detail = {
                 Watch Now
               </a>
               ${trailer ? `
-                <a class="btn btn-secondary" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank">
+                <a class="btn btn-secondary" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener noreferrer">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM10 8.5l5 3.5-5 3.5V8.5z"/></svg>
                   Trailer
                 </a>` : ""}
