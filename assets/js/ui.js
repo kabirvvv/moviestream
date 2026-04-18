@@ -173,7 +173,11 @@ const UI = {
 };
 
 // ── Progress tracking listener (global, used in watch.html) ──
+// Only accept messages from our own origin or the trusted player domain.
+const _TRUSTED_PLAYER_ORIGIN = new URL(CONFIG.PLAYER_BASE).origin;
+
 window.addEventListener("message", e => {
+  if (e.origin !== location.origin && e.origin !== _TRUSTED_PLAYER_ORIGIN) return;
   try {
     const data = JSON.parse(e.data);
     if (!data || !data.id) return;
