@@ -3,11 +3,11 @@
 // ============================================================
 
 const API = {
-  async fetch(endpoint, params = {}) {
-    const url = new URL(`${CONFIG.TMDB_BASE_URL}${endpoint}`);
-    url.searchParams.set("api_key", CONFIG.TMDB_API_KEY);
+  async fetch(endpoint, params = {}, signal) {
+    const url = new URL(CONFIG.TMDB_PROXY, location.origin);
+    url.searchParams.set("endpoint", endpoint);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-    const res = await fetch(url);
+    const res = await globalThis.fetch(url, { signal });
     if (!res.ok) throw new Error(`TMDB API error: ${res.status}`);
     return res.json();
   },
@@ -45,10 +45,10 @@ const API = {
       append_to_response: "credits,videos,similar,recommendations,images",
     });
   },
-  async getMoviesByGenre(genreId, page = 1) {
+  async getMoviesByGenre(genreId, page = 1, sortBy = "popularity.desc") {
     return this.fetch("/discover/movie", {
       with_genres: genreId,
-      sort_by: "popularity.desc",
+      sort_by: sortBy,
       page,
     });
   },
@@ -74,21 +74,21 @@ const API = {
   async getSeason(id, season) {
     return this.fetch(`/tv/${id}/season/${season}`);
   },
-  async getTVByGenre(genreId, page = 1) {
+  async getTVByGenre(genreId, page = 1, sortBy = "popularity.desc") {
     return this.fetch("/discover/tv", {
       with_genres: genreId,
-      sort_by: "popularity.desc",
+      sort_by: sortBy,
       page,
     });
   },
 
   // ── Search ─────────────────────────────────────────────────
-  async search(query, page = 1) {
+  async search(query, page = 1, signal) {
     return this.fetch("/search/multi", {
       query,
       page,
       include_adult: false,
-    });
+    }, signal);
   },
 
   // ── Genres ─────────────────────────────────────────────────
