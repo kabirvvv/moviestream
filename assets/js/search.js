@@ -89,9 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let debounce;
   input?.addEventListener("input", () => {
     clearTimeout(debounce);
-    debounce = setTimeout(() => {
-      if (input.value.trim().length >= 2) doSearch(input.value.trim());
-    }, 450);
+    const q = input.value.trim();
+    if (!q) {
+      if (searchAbortController) searchAbortController.abort();
+      document.getElementById("searchGrid").innerHTML = "";
+      document.getElementById("searchLabel").textContent = "";
+      if (loadMore) loadMore.style.display = "none";
+      currentQuery = "";
+      history.replaceState(null, "", location.pathname);
+      return;
+    }
+    if (q.length >= 2) debounce = setTimeout(() => doSearch(q), 450);
   });
 
   // Load more
